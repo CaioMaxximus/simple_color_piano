@@ -15,7 +15,7 @@
   width: 50px;
   height: 50px;
   position: absolute;
-  animation: up 8s  linear infinite alternate;
+  animation: up 8s  linear forwards ;
 }
 
 .innerBuble{
@@ -53,22 +53,7 @@
 }
 
 
-.x {
-  animation: x 13s linear infinite alternate,
-    y 7s linear infinite alternate;
 
-  width: var(--size);
-  height: var(--size);
-  background-color: aqua;
-
-}
-
-.y {
-  width: var(--size);
-  height: var(--size);
-  background-color: aqua;
-
-}
 
 @keyframes x {
   100% {
