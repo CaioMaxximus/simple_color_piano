@@ -5,7 +5,7 @@ import "./tests/QueueTest.js"
 const firstKeyColor = "antiquewhite";
 const secondKeyColor = "rgb(179, 168, 119)";
 const bublesQueue = new queue(30)
-const lifeTimeBuble = 10000;
+const lifeTimeBuble = 100000;
 let bubleCount = 20;
 
 const keys_enum = {
@@ -26,11 +26,31 @@ let keys_free = {
     "g": true,
     "a": true,
     "b": true
-}
+} 
 
 function dequeueBubles() {
     let index = bublesQueue.dequeue();
     removeBublesDOM(index);
+}
+
+function windEvent() {
+    let style = document.documentElement.style;
+    style.setProperty("--windQuantity", "500px");
+    style.setProperty("--windVelocity", "6s");
+    console.log("wind")
+    // var animation{
+
+    // }
+
+    setTimeout(resetWind, 5000);
+}
+
+function resetWind() {
+
+    let style = document.documentElement.style;
+    style.setProperty("--windQuantity", "0px");
+    style.setProperty("--windVelocity", "0s");
+    console.log("reset")
 }
 
 function removeBublesDOM(index) {
@@ -67,35 +87,46 @@ function getOffset(el) {
 }
 
 
-function spawnBuble(leftMargin) {
+// function spawnBuble(leftMargin) {
 
-    let $buble = document.createElement("div");
-    $buble.className = "buble";
-    $buble.id = "buble-" + bubleCount;
-    let $innerBuble = document.createElement("div");
-    $innerBuble.className = "innerBuble";
-    $buble.appendChild($innerBuble);
+//     let $buble = document.createElement("div");
+//     $buble.className = "buble";
+//     $buble.id = "buble-" + bubleCount;
+//     let $innerBuble = document.createElement("div");
+//     $innerBuble.className = "innerBuble";
+//     $buble.appendChild($innerBuble);
+//     let $innerBubleWind = document.createElement("div");
+//     $innerBuble.appendChild($innerBubleWind)
+//     $innerBubleWind.className = "innerBubleWind";
 
-    let canvasHeight = window.getComputedStyle(
-        document.getElementById("canvas"), null)
-        .getPropertyValue('height');
 
-    $buble.style.borderRadius = "100%";
-    $innerBuble.style.borderRadius = "100%";
-    $buble.style.top = `${Number(canvasHeight.replace("px", "")) - 100}px`;
-    $buble.style.left = leftMargin + "px";
-    document.getElementById("canvas").appendChild($buble);
-    console.log(window.getComputedStyle($buble, null)
-        .getPropertyValue('top'))
+//     let canvasHeight = window.getComputedStyle(
+//         document.getElementById("canvas"), null)
+//         .getPropertyValue('height');
+
+//     $buble.style.top = `${Number(canvasHeight.replace("px", "")) - 100}px`;
+//     $buble.style.left = leftMargin + "px";
+//     document.getElementById("canvas").appendChild($buble);
+//     console.log(window.getComputedStyle($buble, null)
+//         .getPropertyValue('top'))
+// }
+
+
+function spawnBuble(){
+    bublesQueue.enqueue(new Buble());
+
 }
 
+function render(){
+
+} 
 
 function keyPressed(evt) {
     evt = evt || window.event;
     let key = evt.keyCode || evt.wich;
     return String.fromCharCode(key);
 }
-
+ 
 
 function changeKeyDOMColor(elem, color) {
     elem.style.backgroundColor = color;
@@ -144,8 +175,9 @@ function handleKeys(key) {
                 catch (error) {
                     console.log(error)
                 }
-                changeKeyDOMColor($key, secondKeyColor);
             }
+            changeKeyDOMColor($key, secondKeyColor);
+
 
         }
     } catch (error) {
@@ -153,6 +185,11 @@ function handleKeys(key) {
     }
 }
 
+function randomValues(max, min) {
+    return (Math.random() * (max - min + 1)) + min;
+
+}
+    
 document.addEventListener("keyup", (event) => {
     console.log("levantou!!!")
     let key = keyPressed(event);
@@ -163,6 +200,7 @@ document.addEventListener("keypress", (event) => {
     console.log("chamou!!!")
     let key = keyPressed(event);
     handleKeys(key);
-})
+}) 
 
 setInterval(dequeueBubles, lifeTimeBuble);
+setTimeout(windEvent, randomValues(2000, 1000))
