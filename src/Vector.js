@@ -9,6 +9,19 @@ const vector = function(startPos , endPos){
         },
         getEndPos :()=>{
             return end;
+        },
+        getLength : ()=>{
+            let [xi,yi] = start;
+            let [xf , yf] = end;
+            let a = xf - xi;
+            let b = yf - yi;
+            console.log("Length vector" , a , b)
+            let h = Math.sqrt(a * a + b * b)
+            return h;
+        },
+        setVector : (startP ,endP)=>{
+            start = startP;
+            end = endP;
         }
     }
 }
