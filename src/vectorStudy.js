@@ -5,7 +5,7 @@ let cContext = canvas.getContext("2d");
 console.log(cContext)
 let spheres = [];
 let radius = 10;
-const velocity = 0.009;
+const velocity = 0.01;
 
 const Sphere = function (nx, ny, vel, ncolor, nvector) {
     let x = nx;
@@ -59,15 +59,46 @@ function detectColision(sphereA, sphereB) {
     let [x2, y2] = sphereB.getCordinates()
     console.log([x1, y1], [x2, y2])
     console.log((x1 - x2) < 5)
-    if (Math.abs(x1 - x2) < 20 && Math.abs(y1 - y2) < 20    ) {
+    if (Math.abs(x1 - x2) < 20 && Math.abs(y1 - y2) < 20) {
         console.log("colide")
-            // alert(sphereA.getCordinates() , sphereB.getCordinates())
+        // alert(sphereA.getCordinates() , sphereB.getCordinates())
         return true;
     }
 
 
     return false;
 }
+
+function normailzeCodinates(x, y) {
+
+
+    let hipo = Math.sqrt((x * x) + (y * y))
+
+
+    let multiFactor = 1;
+    let newHip = hipo;
+    while (Math.abs(newHip) < 1) {
+        newHip = newHip * 10
+        multiFactor *= 10;
+    }
+
+    return [x * multiFactor / newHip, y * multiFactor / newHip]
+
+}
+
+
+function findAngleComplement(x, y){
+
+
+    if(x < 0 && y >= 0){
+        return Math.PI / 2
+    }if(x < 0 && y < 0){
+        return Math.PI
+    }if(x >= 0 && y < 0){
+        return 3 * Math.PI / 2
+    }return 0
+}
+
 
 function calculateDeflection(sphereA, sphereB) {
 
@@ -81,31 +112,42 @@ function calculateDeflection(sphereA, sphereB) {
     let normalLen = Math.sqrt(normalX ** 2 + normalY ** 2);
     let normalN = [(x2 - x1) / normalLen, (y2 - y1) / normalLen];
     //get normal  vector angle
-    let phiCalc = Math.acos(normalN[0])
-    let phi = phiCalc >= Math.PI ? phiCalc - Math.PI : phiCalc
+    let phiCalc = Math.atan(normalN[1] / normalN[0]) + findAngleComplement(normalN[0],normalN[1])
+    // let phi = phiCalc >= Math.PI ? phiCalc - Math.PI : phiCalc
+    let phi = phiCalc
 
     //get normalized vectors starting at origin
-    let v1N = [(v1.getEndPos()[0] - v1.getStartPos()[0]) / v1Len,
-    (v1.getEndPos()[1] - v1.getStartPos()[1]) / v1Len]
+    // let v1N = [(v1.getEndPos()[0] - v1.getStartPos()[0]) / v1Len,
+    // (v1.getEndPos()[1] - v1.getStartPos()[1]) / v1Len]
 
-    let v2N = [(v2.getEndPos()[0] - v2.getStartPos()[0]) / v2Len,
-    (v2.getEndPos()[1] - v2.getStartPos()[1]) / v2Len]
+    // let v2N = [(v2.getEndPos()[0] - v2.getStartPos()[0]) / v2Len,
+    // (v2.getEndPos()[1] - v2.getStartPos()[1]) / v2Len]
+
+
+    ///temporaly dont normalize vectors
+
+    let v1N = [(v1.getEndPos()[0] - v1.getStartPos()[0]), (v1.getEndPos()[1] - v1.getStartPos()[1])]
+    let v2N = [(v2.getEndPos()[0] - v2.getStartPos()[0]), (v2.getEndPos()[1] - v2.getStartPos()[1])]
 
     //get angles from the vectors
-    let acosV1 = Math.acos(v1N[0]);
-    let acosV2 = Math.acos(v2N[0]);
-    // let teta1 =  acosV1 >= Math.PI ?acosV1 - Math.PI : acosV1
-    // let teta2 =  acosV2 >= Math.PI ?acosV2 - Math.PI : acosV2
+    let acosV1 = Math.atan(v1N[1]/ v1N[0]) + findAngleComplement(v1N[0], v1N[1]);
+    let acosV2 = Math.atan(v2N[1]/ v2N[0]) + findAngleComplement(v2N[0], v2N[1]);
+    // let teta1 = acosV1 >= Math.PI ? acosV1 - Math.PI : acosV1
+    // let teta2 = acosV2 >= Math.PI ? acosV2 - Math.PI : acosV2
 
     let teta1 = acosV1
-
     let teta2 = acosV2
+
+    let m1 = 1;
+    let m2 = 1;
+    let v_1 = velocity;
+    let v_2 = velocity;
     //starting equations
     // for while using global velocity
-    let v1XR = velocity * Math.cos(teta1 - phi);
-    let v1YR = velocity * Math.sin(teta1 - phi);
-    let v2XR = velocity * Math.cos(teta2 - phi);
-    let v2YR = velocity * Math.sin(teta2 - phi);
+    let v1EP1 = (v_1 * Math.cos(teta1 - phi) * (m1 - m2) + (2 * m2 * v_2 * Math.cos(teta2 - phi))) / (m1 + m2);
+    let v2EP2 = (v_2 * Math.cos(teta2 - phi) *
+        (m2 - m1) + (2 * m1 * v_1 * Math.cos(teta1 - phi))) / (m1 + m2);
+
 
     ///same mass(1) and same velocity guide to same force for while
 
@@ -114,22 +156,57 @@ function calculateDeflection(sphereA, sphereB) {
 
     /// ignoring masses; maybe change after
 
-    let v1FX = ((2 * v2XR) / 2) * Math.cos(phi) + v1YR * Math.cos(phiPlusPi);
-    let v1FY = ((2 * v2XR) / 2) * Math.sin(phi) + v1YR * Math.sin(phiPlusPi);
-    let v2FX = ((2 * v1XR) / 2) * Math.cos(phi) + v2YR * Math.cos(phiPlusPi);
-    let v2FY = ((2 * v1XR) / 2) * Math.sin(phi) + v2YR * Math.sin(phiPlusPi);
+    let v1FX = v1EP1 * Math.cos(phi) + v_1 * Math.sin(teta1 - phi) * Math.cos(phiPlusPi);
+    let v1FY = v1EP1 * Math.sin(phi) + v_1 * Math.sin(teta1 - phi) * Math.sin(phiPlusPi);
+    let v2FX = v2EP2 * Math.cos(phi) + v_2 * Math.sin(teta2 - phi) * Math.cos(phiPlusPi);
+    let v2FY = v2EP2 * Math.sin(phi) + v_2 * Math.sin(teta2 - phi) * Math.sin(phiPlusPi);
 
-    sphereA.getVector().setVector(sphereA.getCordinates(), 
-    [v1FX + sphereA.getVector().getStartPos()[0] , v1FY + 
-    sphereA.getVector().getStartPos()[1]])
+
+    let hipo1 = Math.sqrt((v1FX * v1FX) + (v1FY * v1FY))
+    let hipo2 = Math.sqrt((v2FX * v2FX) + (v2FY * v2FY))
+
+
+    let [newCordNX1, newCordNY1] = normailzeCodinates(v1FX, v1FY)
+    let [newCordNX2, newCordNY2] = normailzeCodinates(v2FX, v2FY)
+
+
+    let size = 1000
+
+    let angleV1 = Math.acos(v1FX / hipo1)
+    let [newXV1, newYV1] = [sphereA.getCordinates()[0] + newCordNX1 * size, sphereA.getCordinates()[1] + newCordNY1 * size]
+    ///testing
+
+
+    let angleV2 = Math.acos(v2FX / hipo2)
+
+    let [newXV2, newYV2] = [sphereB.getCordinates()[0] + newCordNX2 * size, sphereB.getCordinates()[1] + newCordNY2 * size]
+    let newH = Math.sqrt(((newXV2 - x2) ** 2) + ((newYV2 - y2) ** 2))
+
+    let angleT = Math.acos((newXV2 - x2) / newH)
+
+    // sphereA.getVector().setVector(sphereA.getCordinates(),
+    //     [(sphereA.getCordinates()[0] + v1FX) + 100, (sphereA.getCordinates()[1] + v1FY) + 100])
+    // sphereB.getVector().setVector(sphereB.getCordinates(),
+    //     [(sphereB.getCordinates()[0] + v2FX) + 100,
+    //     (sphereB.getCordinates()[0] + v2FY) + 100])
+
+
+    sphereA.getVector().setVector(sphereA.getCordinates(),
+        [newXV1, newYV1])
     sphereB.getVector().setVector(sphereB.getCordinates(),
-     [ v2FX +  sphereB.getVector().getStartPos()[0] , v2FY + 
-    sphereB.getVector().getStartPos()[1]])
+        [newXV2, newYV2])
 
-    console.log(v1FX,
-        v1FY, 
-        v2FX,
-        v2FY,);
+    // while (detectColision(sphereA, sphereB)) {
+    //     move([sphereA, sphereB], velocity)
+
+    // }
+
+    console.log(sphereA.getVector().getStartPos(),
+        sphereA.getVector().getEndPos(),
+        sphereB.getVector().getStartPos(),
+        sphereB.getVector().getEndPos());
+
+
 }
 
 
@@ -150,23 +227,33 @@ function step() {
     move(spheres, velocity);
 
 }
-let vec1 = new vector([canvas.width / 2 - 100, canvas.height / 2], [canvas.width / 2 + 100, canvas.height / 2]);
-let vec2 = new vector([canvas.width / 2 + 100, canvas.height / 2], [canvas.width / 2 - 100, canvas.height / 2]);
-let s1 = new Sphere(canvas.width / 2 - 100, canvas.height / 2, 1, "#0095DD", vec1);
-let s2 = new Sphere(canvas.width / 2 + 100, canvas.height / 2, 1, "#0005DD", vec2);
+let vec1 = new vector([canvas.width / 2 - 100, canvas.height / 2 +5], [(canvas.width / 2), (canvas.height / 2)]);
+let vec2 = new vector([(canvas.width / 2), (canvas.height / 2)], [canvas.width / 2 - 100, canvas.height / 2]);
+let s1 = new Sphere(canvas.width / 2 - 100, (canvas.height / 2) + 5, 1, "#ff0000", vec1);
+let s2 = new Sphere((canvas.width / 2), (canvas.height / 2), 1, "#0005DD", vec2);
 
 
+// let vec3 = new vector([canvas.width / 2 - 100, canvas.height / 2 + 45], [(canvas.width / 2), (canvas.height / 2)]);
+// let vec4 = new vector([(canvas.width / 2), (canvas.height / 2) -20], [canvas.width / 2 - 100, canvas.height / 2]);
+//  let s3 = new Sphere(canvas.width / 2 - 100, (canvas.height / 2) + 45, 1, "#ff9000", vec3);
+//  let s4 = new Sphere((canvas.width / 2), (canvas.height / 2) - 20, 1, "#0007FD", vec4);
+
+ 
 spheres.push(s1)
 spheres.push(s2)
+//  spheres.push(s3)
+//  spheres.push(s4)
+
+// render(spheres)
+
+ setInterval(() => {
+     step()
+ }, 100)
+ setInterval(() => {
+     render()
+ }, 12)
 
 
-
-// // drawSphere(s)
-
-setInterval(() => {
-    step()
-}, 10)
-
-setInterval(() => {
-    render()
-}, 12)
+// let sT = new Sphere(10,  1,1 , "#ff0000", new vector )
+// spheres.push(sT)
+// render()
